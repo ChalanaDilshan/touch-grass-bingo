@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: touch-grass-bingo
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: 10000

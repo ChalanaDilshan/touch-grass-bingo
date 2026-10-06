@@ -1,0 +1,23 @@
+{
+  "name": "Touch Grass Bingo",
+  "short_name": "TouchGrass",
+  "description": "Daily nature bingo card powered by open-weight AI vision. Go outside, snap photos, get verified.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#c8e6c9",
+  "theme_color": "#2e7d32",
+  "orientation": "portrait",
+  "categories": ["games", "lifestyle"],
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Touch Grass Bingo — Daily Nature Card"
+    }
+  ]
+}

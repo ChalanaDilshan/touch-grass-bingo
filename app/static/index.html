@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Touch Grass Bingo 🌿 Daily Nature Challenge</title>
+    <meta name="description" content="A mobile-friendly daily nature bingo card powered by AI vision. Step outside, photograph local nature, and touch grass.">
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TouchGrass">
+
+    <!-- Web App Manifest & Favicons -->
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" type="image/png" sizes="48x48" href="/static/favicon.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" sizes="192x192" href="/static/icon-192.png">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://touch-grass-bingo.onrender.com/">
+    <meta property="og:title" content="Touch Grass Bingo 🌿 Daily Nature Challenge">
+    <meta property="og:description" content="Step outside, photograph real-world Sri Lankan flora & fauna, and let open-weight AI vision verify your bingo card!">
+    <meta property="og:image" content="/static/screenshot.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Touch Grass Bingo 🌿 Daily Nature Challenge">
+    <meta name="twitter:description" content="Step outside, photograph real-world Sri Lankan flora & fauna, and let open-weight AI vision verify your bingo card!">
+    <meta name="twitter:image" content="/static/screenshot.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+    <!-- Decorative background leaves -->
+    <div class="leaf-bg leaf-bg-tl" aria-hidden="true">🌿</div>
+    <div class="leaf-bg leaf-bg-tr" aria-hidden="true">🍃</div>
+    <div class="leaf-bg leaf-bg-bl" aria-hidden="true">🍃</div>
+    <div class="leaf-bg leaf-bg-br" aria-hidden="true">🌿</div>
+    <div class="leaf-bg leaf-bg-ml" aria-hidden="true">🌱</div>
+    <div class="leaf-bg leaf-bg-mr" aria-hidden="true">🌱</div>
+
+    <div class="app-wrapper">
+
+        <!-- ─── HEADER ─── -->
+        <header class="app-header">
+            <div class="header-top">
+                <div class="brand">
+                    <div class="brand-logo" aria-hidden="true">🍃</div>
+                    <div class="brand-text-group">
+                        <span class="brand-name">TouchGrass</span>
+                        <span class="brand-date" id="date-display">Today</span>
+                    </div>
+                    <span class="badge-location">📍 SRI LANKA 🇱🇰</span>
+                </div>
+
+                <div class="header-actions">
+                    <button id="lang-toggle-btn" class="lang-pill-btn" title="Toggle Language: English / Sinhala" aria-label="Toggle Language">
+                        🌐 <span id="lang-label">EN</span>
+                    </button>
+                    <button id="streak-pill-btn" class="streak-pill-btn" title="Daily Outdoor Streak" aria-label="Daily Outdoor Streak">
+                        🔥 <span id="streak-count">1</span>d
+                    </button>
+                    <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">
+                        <span id="sound-icon">🔊</span>
+                    </button>
+                    <button id="share-card-btn" class="icon-btn" title="Share Progress" aria-label="Share Progress">
+                        <span>📤</span>
+                    </button>
+                    <button id="bingo-pill-btn" class="bingo-pill-btn" aria-live="polite">
+                        🏆 <span id="bingo-lines-count">0 Bingos</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress Row -->
+            <div class="progress-row">
+                <span class="progress-leaf-icon" aria-hidden="true">🌿</span>
+                <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="9" id="progress-bar-fill" style="--progress: 0%">
+                    <div class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <span class="progress-text" id="progress-text">0 of 9 items found (0%)</span>
+                <span class="camera-tip">
+                    <span>📷</span>
+                    <span>Tap any tile to scan with camera</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- ─── MAIN CONTENT ─── -->
+        <main class="main-content">
+
+            <!-- Loading State -->
+            <div id="loading-state" class="state-card">
+                <div class="spinner"></div>
+                <h3>Generating Daily Nature Card…</h3>
+                <p>Loading localized flora &amp; fauna for your nature walk</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="state-card hidden">
+                <div class="error-icon">⚠️</div>
+                <h3 id="error-title">Could not load today's card</h3>
+                <p id="error-message">Please check your internet connection and retry.</p>
+                <button id="retry-btn" class="btn btn-primary" style="max-width:160px; margin-top:4px;">Try Again</button>
+            </div>
+
+            <!-- Bingo Grid -->
+            <div id="grid-container" class="grid-container hidden">
+                <div id="bingo-grid" class="bingo-grid" role="grid" aria-label="Touch Grass Nature Bingo 3×3 Card"></div>
+            </div>
+
+            <!-- Bingo Win Banner -->
+            <aside id="bingo-banner" class="bingo-banner hidden" aria-live="polite">
+                <div class="banner-content">
+                    <span class="banner-emoji">🎉</span>
+                    <div class="banner-text">
+                        <h4 id="banner-title">BINGO! Line Complete!</h4>
+                        <p id="banner-sub">Keep exploring to complete the full card!</p>
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+
+        <!-- ─── FOOTER ─── -->
+        <footer class="app-footer">
+            <div class="privacy-pill">
+                <span>🔒</span>
+                <span>In-memory AI verification — Photos are never saved on the server.</span>
+            </div>
+            <p class="hacktober-credit">Built for DEV.to Hacktoberfest 2026 • Hosted on <strong>Render</strong></p>
+        </footer>
+    </div>
+
+    <!-- ─── FEEDBACK MODAL ─── -->
+    <div id="feedback-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span id="feedback-badge" class="result-badge">AI Analysis</span>
+                <button id="close-modal-btn" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="feedback-icon" class="result-big-icon">🌿</div>
+                <h3 id="feedback-title">Result</h3>
+                <p id="feedback-desc" class="result-description"></p>
+
+                <div id="confidence-section" class="confidence-box hidden">
+                    <div class="confidence-label-row">
+                        <span>Match Confidence</span>
+                        <span id="target-percent-text" class="bold-stat">0%</span>
+                    </div>
+                    <div class="meter-track">
+                        <div id="target-meter-fill" class="meter-fill" style="width: 0%;"></div>
+                    </div>
+                    <p id="ai-distractor-tip" class="ai-insight-text"></p>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="modal-retry-camera-btn" class="btn btn-primary hidden">📷 Try Again</button>
+                    <button id="modal-ok-btn" class="btn btn-secondary">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SHARE MODAL ─── -->
+    <div id="share-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="share-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="result-badge badge-gold">Share Walk</span>
+                <button id="close-share-modal-btn" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="result-big-icon">🌾</div>
+                <h3 id="share-title">Today's Nature Walk</h3>
+                <div class="share-preview-box">
+                    <pre id="share-text-preview"></pre>
+                </div>
+                <div class="modal-actions">
+                    <button id="native-share-btn" class="btn btn-primary">📤 Share Card</button>
+                    <button id="copy-text-btn" class="btn btn-secondary">📋 Copy Text</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── WIN MODAL ─── -->
+    <div id="win-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="win-title">
+        <div class="modal-card modal-celebration">
+            <div class="modal-body">
+                <div class="result-big-icon celebration-bounce">🏆</div>
+                <h2 id="win-title">Full Garden Master!</h2>
+                <p class="celebration-sub">You found all 9 items and completed today's Touch Grass Bingo!</p>
+                <div class="stats-pills">
+                    <div class="stat-pill">
+                        <span class="stat-num">9/9</span>
+                        <span class="stat-label">Items</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span id="win-bingo-count" class="stat-num">8</span>
+                        <span class="stat-label">Bingos</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="win-share-btn" class="btn btn-gold">🌟 Share Achievement</button>
+                    <button id="win-close-btn" class="btn btn-secondary">Admire Board</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" aria-hidden="true">
+    <canvas id="resize-canvas" class="hidden" aria-hidden="true"></canvas>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+    <script src="/static/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js').catch(err => {
+                    console.log('ServiceWorker registration failed:', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
