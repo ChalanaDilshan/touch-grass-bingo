@@ -15,7 +15,7 @@
 
 ---
 
-## 🎯 What is it?
+##  What is it?
 
 **Touch Grass Bingo** is a gamified nature walk app that generates a fresh **3×3 bingo card** every day filled with **Sri Lankan outdoor nature items** — coconut trees, ant trails, spider webs, jackfruit leaves, and more.
 
@@ -25,7 +25,7 @@ Complete 3 in a row to score a **BINGO** 🎉, and fill the full card to become 
 
 ---
 
-## ✨ Features
+##  Features
 
 | Feature | Detail |
 |---|---|
@@ -42,7 +42,7 @@ Complete 3 in a row to score a **BINGO** 🎉, and fill the full card to become 
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -75,7 +75,7 @@ Complete 3 in a row to score a **BINGO** 🎉, and fill the full card to become 
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 TouchGrass/
@@ -106,7 +106,7 @@ TouchGrass/
 
 ---
 
-## 📊 Performance & Accuracy Benchmark
+##  Performance & Accuracy Benchmark
 
 Evaluated using `python -m evaluation.eval` on standard low-memory CPU hardware:
 
@@ -124,7 +124,7 @@ Evaluated using `python -m evaluation.eval` on standard low-memory CPU hardware:
 
 ---
 
-## 🚀 Running Locally
+##  Running Locally
 
 ### Prerequisites
 - Python 3.10+
@@ -155,7 +155,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 ---
 
-## 🧪 Running Tests
+##  Running Tests
 
 ```bash
 pip install pytest httpx
@@ -166,7 +166,7 @@ Tests cover: health check endpoint, card generation (9 items, deterministic seed
 
 ---
 
-## 🐳 Docker
+##  Docker
 
 ```bash
 # Build (downloads model weights into the image at build time)
@@ -178,7 +178,7 @@ docker run -p 10000:10000 touch-grass-bingo
 
 ---
 
-## ☁️ Deploy to Render
+##  Deploy to Render
 
 This repo includes a [`render.yaml`](render.yaml) Render Blueprint for **1-click deployment**.
 
@@ -197,7 +197,7 @@ This repo includes a [`render.yaml`](render.yaml) Render Blueprint for **1-click
 
 ---
 
-## 🤖 How the AI Works
+##  How the AI Works
 
 Touch Grass Bingo uses **zero-shot image classification** with [OpenCLIP](https://github.com/mlfoundations/open_clip).
 
@@ -220,7 +220,7 @@ When you upload a photo:
 
 ---
 
-## 🌱 Nature Items (25 total)
+##  Nature Items (25 total)
 
 Daily cards are randomly sampled from 25 Sri Lankan nature items including:
 Red Flower • Moss on a Rock • Tree Bark • Puddle • Ant Trail • Yellow Leaf •
@@ -231,7 +231,7 @@ Wild Berries • Stray Dog
 
 ---
 
-## 🔒 Privacy
+##  Privacy
 
 - Photos are processed **entirely in server memory** and discarded immediately after verification.
 - No photos are ever written to disk or stored in any database.
@@ -240,12 +240,12 @@ Wild Berries • Stray Dog
 
 ---
 
-## 📄 License
+##  License
 
 MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
-  Made with 🌿 for <b>DEV.to Hacktoberfest 2026 — Open-Source AI Challenge, Week 1: Touch Grass</b>
+  Made with 🌿 for <b>DEV.to Hacktoberfest 2026 - Open-Source AI Challenge, Week 1: Touch Grass</b>
 </p>
