@@ -359,8 +359,9 @@ function renderGrid(items) {
             </div>
             <button class="tile-scan-btn" aria-label="${isDone ? 'Already found' : 'Tap to scan with camera'}">
                 <span class="scan-btn-inner">
-                    <span>📷</span>
-                    <span>${isDone ? 'Found ✓' : 'Tap to scan'}</span>
+                    <span class="scan-btn-icon">${isDone ? '🌿' : '📷'}</span>
+                    <span class="scan-label-full">${isDone ? 'Found ✓' : 'Tap to scan'}</span>
+                    <span class="scan-label-short">${isDone ? 'Done ✓' : 'Scan'}</span>
                 </span>
                 <span class="scan-btn-arrow">›</span>
             </button>
@@ -598,7 +599,7 @@ function markTileCompleted(itemId, thumbUrl) {
     const scanBtn = tile.querySelector('.tile-scan-btn');
     if (scanBtn) {
         const inner = scanBtn.querySelector('.scan-btn-inner');
-        if (inner) inner.innerHTML = '<span>🌿</span><span>Found ✓</span>';
+        if (inner) inner.innerHTML = '<span class="scan-btn-icon">🌿</span><span class="scan-label-full">Found ✓</span><span class="scan-label-short">Done ✓</span>';
     }
 }
 

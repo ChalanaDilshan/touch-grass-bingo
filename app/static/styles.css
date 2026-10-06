@@ -34,6 +34,12 @@
     --shadow-card: 0 2px 12px rgba(46, 125, 50, 0.1), 0 1px 3px rgba(0,0,0,0.06);
     --shadow-btn: 0 4px 14px rgba(46, 125, 50, 0.35);
     --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Safe Area Insets for notched phones & gesture bars */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
 }
 
 * {
@@ -43,17 +49,26 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: var(--font-main);
     background: var(--bg-gradient);
     color: var(--text-dark);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding: 0;
     position: relative;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Decorative leaf background shapes */
@@ -116,8 +131,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 20px 20px 32px;
+    padding: max(20px, var(--safe-top)) max(20px, var(--safe-right)) max(32px, var(--safe-bottom)) max(20px, var(--safe-left));
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 /* ——— HEADER ——— */
@@ -126,25 +142,27 @@ body {
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border-radius: var(--radius-lg);
-    padding: 14px 20px 12px;
+    padding: 16px 20px 14px;
     box-shadow: var(--shadow-card);
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 12px;
     margin-bottom: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2px;
+    gap: 12px;
 }
 
 .brand {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
 .brand-logo {
@@ -164,6 +182,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1px;
+    min-width: 0;
 }
 
 .brand-name {
@@ -171,7 +190,8 @@ body {
     font-weight: 800;
     color: var(--text-dark);
     letter-spacing: -0.03em;
-    line-height: 1;
+    line-height: 1.05;
+    white-space: nowrap;
 }
 
 .brand-date {
@@ -181,28 +201,47 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
-}
-
-.badge-location {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--accent-mid);
-    background: var(--accent-pill);
-    border: 1px solid rgba(56, 142, 60, 0.25);
-    padding: 4px 10px;
-    border-radius: var(--radius-full);
-    margin-left: 10px;
+    white-space: nowrap;
 }
 
 .header-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
+}
+
+.header-stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(56, 142, 60, 0.12);
+}
+
+.header-pills-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.70rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-mid);
+    background: var(--accent-pill);
+    border: 1px solid rgba(56, 142, 60, 0.25);
+    padding: 5px 11px;
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .icon-btn {
@@ -211,6 +250,8 @@ body {
     color: var(--text-dark);
     width: 40px;
     height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -219,6 +260,7 @@ body {
     cursor: pointer;
     transition: var(--transition);
     flex-shrink: 0;
+    touch-action: manipulation;
 }
 
 .icon-btn:hover {
@@ -238,11 +280,13 @@ body {
     font-size: 0.82rem;
     font-weight: 800;
     padding: 7px 12px;
+    min-height: 36px;
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
     box-shadow: 0 2px 8px rgba(255, 152, 0, 0.15);
+    touch-action: manipulation;
 }
 
 .streak-pill-btn:hover {
@@ -263,10 +307,12 @@ body {
     font-size: 0.82rem;
     font-weight: 700;
     padding: 7px 11px;
+    min-height: 40px;
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
+    touch-action: manipulation;
 }
 
 .lang-pill-btn:hover {
@@ -286,11 +332,13 @@ body {
     font-size: 0.85rem;
     font-weight: 800;
     padding: 8px 16px;
+    min-height: 36px;
     border-radius: var(--radius-full);
     cursor: pointer;
     transition: var(--transition);
     box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35);
     white-space: nowrap;
+    touch-action: manipulation;
 }
 
 .bingo-pill-btn:hover {
@@ -302,12 +350,21 @@ body {
 .progress-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    margin-top: 12px;
+    margin-top: 0;
     background: #f8fdf8;
     border: 1.5px solid rgba(56, 142, 60, 0.15);
     border-radius: var(--radius-full);
     padding: 8px 16px;
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
 }
 
 .progress-leaf-icon {
@@ -322,6 +379,7 @@ body {
     border-radius: var(--radius-full);
     overflow: hidden;
     position: relative;
+    min-width: 50px;
 }
 
 .progress-bar-fill {
@@ -378,6 +436,7 @@ body {
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     gap: 8px;
     box-shadow: var(--shadow-card);
     transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
@@ -385,6 +444,8 @@ body {
     overflow: hidden;
     user-select: none;
     min-height: 130px;
+    height: 100%;
+    touch-action: manipulation;
 }
 
 .card-tile:hover {
@@ -480,6 +541,13 @@ body {
 }
 
 /* Scan CTA Button inside tile */
+.scan-label-short {
+    display: none;
+}
+.scan-label-full {
+    display: inline;
+}
+
 .tile-scan-btn {
     display: flex;
     align-items: center;
@@ -497,6 +565,7 @@ body {
     transition: var(--transition);
     box-shadow: var(--shadow-btn);
     pointer-events: none; /* clicks go through to the tile */
+    margin-top: auto;
 }
 
 .card-tile:hover .tile-scan-btn {
@@ -507,6 +576,11 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+}
+
+.scan-btn-icon {
+    flex-shrink: 0;
 }
 
 .scan-btn-arrow {
@@ -652,8 +726,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px;
+    padding: max(16px, var(--safe-top)) max(12px, var(--safe-right)) max(16px, var(--safe-bottom)) max(12px, var(--safe-left));
     animation: fade-in 0.2s ease;
+    overflow-y: auto;
 }
 
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -670,6 +745,12 @@ body {
     flex-direction: column;
     gap: 16px;
     animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: calc(100dvh - 32px);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    margin: auto;
 }
 
 @keyframes modal-pop {
@@ -717,15 +798,18 @@ body {
     background: #f5f5f5;
     border: none;
     color: #666;
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
     border-radius: 50%;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: manipulation;
 }
 
 .modal-close-btn:hover {
@@ -837,6 +921,7 @@ body {
 .btn {
     flex: 1;
     padding: 12px 16px;
+    min-height: 44px;
     border-radius: var(--radius-md);
     font-family: var(--font-main);
     font-size: 0.86rem;
@@ -848,6 +933,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
+    touch-action: manipulation;
 }
 
 .btn-primary {
@@ -934,7 +1020,7 @@ body {
 /* ——— TOAST ——— */
 .toast {
     position: fixed;
-    bottom: 24px;
+    bottom: max(20px, calc(var(--safe-bottom) + 16px));
     left: 50%;
     transform: translateX(-50%);
     background: var(--text-dark);
@@ -943,9 +1029,13 @@ body {
     border-radius: var(--radius-full);
     font-size: 0.83rem;
     font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
     z-index: 200;
-    white-space: nowrap;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+    max-width: min(92vw, 420px);
+    width: max-content;
     animation: toast-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -999,21 +1089,497 @@ body {
 /* Utility */
 .hidden { display: none !important; }
 
-/* ——— RESPONSIVE ——— */
-@media (max-width: 600px) {
-    .app-wrapper { padding: 12px 10px 24px; }
-    .bingo-grid { gap: 8px; }
-    .card-tile { padding: 12px 10px 10px; min-height: 115px; }
-    .card-primary, .card-en { font-size: 0.92rem; }
-    .card-sub, .card-si { font-size: 0.70rem; }
-    .tile-scan-btn { padding: 8px 10px; font-size: 0.74rem; }
-    .camera-tip { display: none; }
-    .brand-name { font-size: 1.25rem; }
+/* ==========================================================================
+   MOBILE RESPONSIVE SYSTEM
+   ========================================================================== */
+
+/* Tablets and small laptops (<= 768px) */
+@media (max-width: 768px) {
+    .app-wrapper {
+        padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(28px, var(--safe-bottom)) max(16px, var(--safe-left));
+    }
+    .bingo-grid {
+        gap: 10px;
+    }
+    .card-tile {
+        padding: 12px 10px 10px;
+        min-height: 120px;
+    }
+    .card-primary, .card-en {
+        font-size: 0.96rem;
+    }
+    .card-sub, .card-si {
+        font-size: 0.72rem;
+    }
 }
 
-@media (max-width: 380px) {
-    .bingo-grid { gap: 6px; }
-    .card-primary, .card-en { font-size: 0.84rem; }
-    .card-sub, .card-si { font-size: 0.65rem; }
-    .badge-location { display: none; }
+/* Mobile Screens (<= 600px) */
+@media (max-width: 600px) {
+    .app-wrapper {
+        padding: max(10px, var(--safe-top)) max(10px, var(--safe-right)) max(24px, var(--safe-bottom)) max(10px, var(--safe-left));
+    }
+
+    .app-header {
+        padding: 12px 12px 10px;
+        gap: 8px;
+        border-radius: var(--radius-md);
+        margin-bottom: 10px;
+    }
+
+    .header-top {
+        gap: 8px;
+    }
+
+    .brand {
+        gap: 8px;
+    }
+
+    .brand-logo {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2rem;
+        border-radius: 10px;
+    }
+
+    .brand-name {
+        font-size: 1.3rem;
+    }
+
+    .brand-date {
+        font-size: 0.68rem;
+    }
+
+    .header-actions {
+        gap: 6px;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 0.92rem;
+    }
+
+    .lang-pill-btn {
+        padding: 6px 11px;
+        min-height: 36px;
+        font-size: 0.78rem;
+    }
+
+    .header-stats-bar {
+        padding-top: 8px;
+        gap: 6px;
+    }
+
+    .header-pills-group {
+        gap: 6px;
+    }
+
+    .badge-location {
+        font-size: 0.64rem;
+        padding: 4px 9px;
+    }
+
+    .streak-pill-btn {
+        padding: 5px 10px;
+        font-size: 0.76rem;
+        min-height: 32px;
+    }
+
+    .bingo-pill-btn {
+        padding: 6px 12px;
+        font-size: 0.78rem;
+        min-height: 32px;
+    }
+
+    /* Progress Row wraps on mobile */
+    .progress-row {
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        align-items: stretch;
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        gap: 8px;
+    }
+
+    .progress-text {
+        font-size: 0.70rem;
+    }
+
+    .camera-tip {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        padding-top: 3px;
+        border-top: 1px dashed rgba(56, 142, 60, 0.12);
+    }
+
+    /* Bingo Grid & Tiles */
+    .bingo-grid {
+        gap: 8px;
+    }
+
+    .card-tile {
+        padding: 9px 8px 8px;
+        min-height: 105px;
+        border-radius: 12px;
+        gap: 4px;
+    }
+
+    .tile-num-tag {
+        font-size: 0.60rem;
+        padding: 2px 5px;
+    }
+
+    .tile-leaf-icon {
+        font-size: 0.95rem;
+    }
+
+    .card-primary,
+    .card-en.card-primary,
+    .card-en,
+    .card-si.card-primary {
+        font-size: clamp(0.76rem, 2.7vw, 0.88rem);
+        line-height: 1.18;
+    }
+
+    .card-sub,
+    .card-si.card-sub,
+    .card-si,
+    .card-en.card-sub {
+        font-size: clamp(0.62rem, 2vw, 0.70rem);
+        line-height: 1.15;
+    }
+
+    .tile-scan-btn {
+        padding: 6px 6px;
+        font-size: 0.72rem;
+        border-radius: 8px;
+        justify-content: center;
+    }
+
+    .scan-btn-inner {
+        gap: 4px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .scan-btn-arrow {
+        display: none;
+    }
+
+    /* Decorative leaves toned down on mobile */
+    .leaf-bg {
+        opacity: 0.22;
+    }
+    .leaf-bg-tl {
+        top: -10px;
+        left: -20px;
+        font-size: 110px;
+    }
+    .leaf-bg-tr {
+        top: -5px;
+        right: -15px;
+        font-size: 95px;
+    }
+    .leaf-bg-bl {
+        bottom: 20px;
+        left: -15px;
+        font-size: 85px;
+    }
+    .leaf-bg-br {
+        bottom: 10px;
+        right: -15px;
+        font-size: 90px;
+    }
+    .leaf-bg-ml,
+    .leaf-bg-mr {
+        display: none;
+    }
+
+    /* Modals on mobile */
+    .modal-card {
+        padding: 18px 16px;
+        border-radius: var(--radius-md);
+        gap: 12px;
+        max-height: calc(100dvh - 24px);
+    }
+
+    .result-big-icon {
+        font-size: 2.5rem;
+    }
+
+    .modal-body h3 {
+        font-size: 1rem;
+    }
+
+    .result-description {
+        font-size: 0.82rem;
+    }
+
+    .confidence-box {
+        padding: 10px 12px;
+        gap: 6px;
+    }
+
+    /* Bingo win banner */
+    .bingo-banner {
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+    }
+    .banner-content {
+        gap: 10px;
+    }
+    .banner-emoji {
+        font-size: 1.4rem;
+    }
+    .banner-text h4 {
+        font-size: 0.86rem;
+    }
+    .banner-text p {
+        font-size: 0.70rem;
+    }
+
+    /* Footer */
+    .app-footer {
+        margin-top: 12px;
+        gap: 6px;
+    }
+    .privacy-pill {
+        font-size: 0.68rem;
+        padding: 6px 12px;
+    }
+    .hacktober-credit {
+        font-size: 0.65rem;
+    }
+}
+
+/* Compact Mobile (<= 440px, e.g., iPhone SE, Pixel 5, standard mobile) */
+@media (max-width: 440px) {
+    .scan-label-full {
+        display: none;
+    }
+    .scan-label-short {
+        display: inline;
+    }
+
+    .tile-scan-btn {
+        padding: 5px 4px;
+        font-size: 0.70rem;
+    }
+
+    .card-tile {
+        padding: 8px 6px 6px;
+        min-height: 98px;
+    }
+
+    .header-top {
+        gap: 6px;
+    }
+
+    .brand-name {
+        font-size: 1.2rem;
+    }
+
+    .header-actions {
+        gap: 5px;
+    }
+
+    .icon-btn {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        font-size: 0.88rem;
+    }
+
+    .lang-pill-btn {
+        padding: 5px 9px;
+        min-height: 34px;
+        font-size: 0.74rem;
+    }
+
+    .badge-location {
+        font-size: 0.60rem;
+        padding: 3px 7px;
+    }
+
+    .streak-pill-btn {
+        padding: 5px 9px;
+        font-size: 0.72rem;
+        min-height: 30px;
+    }
+
+    .bingo-pill-btn {
+        padding: 5px 10px;
+        font-size: 0.74rem;
+        min-height: 30px;
+    }
+
+    .stats-pills {
+        gap: 8px;
+        width: 100%;
+    }
+
+    .stat-pill {
+        flex: 1;
+        padding: 6px 12px;
+    }
+
+    .stat-num {
+        font-size: 1.15rem;
+    }
+
+    .stat-label {
+        font-size: 0.60rem;
+    }
+}
+
+/* Narrow Mobile Screens (<= 360px, e.g., iPhone SE 1st Gen, narrow Android) */
+@media (max-width: 360px) {
+    .app-wrapper {
+        padding: max(6px, var(--safe-top)) max(6px, var(--safe-right)) max(18px, var(--safe-bottom)) max(6px, var(--safe-left));
+    }
+
+    .bingo-grid {
+        gap: 5px;
+    }
+
+    .card-tile {
+        padding: 7px 5px 5px;
+        min-height: 90px;
+    }
+
+    .card-primary,
+    .card-en.card-primary,
+    .card-en,
+    .card-si.card-primary {
+        font-size: 0.72rem;
+    }
+
+    .card-sub,
+    .card-si.card-sub,
+    .card-si,
+    .card-en.card-sub {
+        font-size: 0.60rem;
+    }
+
+    .tile-num-tag {
+        font-size: 0.56rem;
+        padding: 1px 4px;
+    }
+
+    .tile-leaf-icon {
+        font-size: 0.85rem;
+    }
+
+    .tile-scan-btn {
+        padding: 4px 2px;
+        font-size: 0.66rem;
+    }
+
+    .header-stats-bar {
+        gap: 4px;
+    }
+
+    .badge-location {
+        font-size: 0.58rem;
+        padding: 3px 5px;
+    }
+
+    .streak-pill-btn {
+        padding: 4px 7px;
+        font-size: 0.70rem;
+    }
+
+    .bingo-pill-btn {
+        padding: 4px 8px;
+        font-size: 0.70rem;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-actions .btn {
+        width: 100%;
+        padding: 10px 12px;
+    }
+}
+
+/* Mobile Landscape Mode */
+@media (max-height: 540px) and (orientation: landscape) {
+    .app-wrapper {
+        padding: max(6px, var(--safe-top)) max(14px, var(--safe-right)) max(12px, var(--safe-bottom)) max(14px, var(--safe-left));
+    }
+
+    .app-header {
+        padding: 8px 12px;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .brand-logo {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .brand-name {
+        font-size: 1.15rem;
+    }
+
+    .header-stats-bar {
+        padding-top: 6px;
+        gap: 6px;
+    }
+
+    .bingo-grid {
+        gap: 6px;
+    }
+
+    .card-tile {
+        min-height: 85px;
+        padding: 6px 8px;
+    }
+
+    .modal-card {
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+        padding: 14px 16px;
+    }
+
+    .leaf-bg {
+        display: none;
+    }
+}
+
+/* Touch-specific ergonomic optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .card-tile:active {
+        transform: scale(0.97);
+        transition: transform 0.1s ease;
+    }
+    .card-tile:hover {
+        transform: none;
+        box-shadow: var(--shadow-card);
+    }
+    .card-tile.completed:hover {
+        transform: none;
+    }
+    .btn:active,
+    .icon-btn:active,
+    .lang-pill-btn:active,
+    .streak-pill-btn:active,
+    .bingo-pill-btn:active {
+        transform: scale(0.95);
+    }
 }

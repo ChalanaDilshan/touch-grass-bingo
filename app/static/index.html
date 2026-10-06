@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Touch Grass Bingo 🌿 Daily Nature Challenge</title>
     <meta name="description" content="A mobile-friendly daily nature bingo card powered by AI vision. Step outside, photograph local nature, and touch grass.">
     <meta name="theme-color" content="#2e7d32">
@@ -57,21 +57,26 @@
                         <span class="brand-name">TouchGrass</span>
                         <span class="brand-date" id="date-display">Today</span>
                     </div>
-                    <span class="badge-location">📍 SRI LANKA 🇱🇰</span>
                 </div>
 
                 <div class="header-actions">
                     <button id="lang-toggle-btn" class="lang-pill-btn" title="Toggle Language: English / Sinhala" aria-label="Toggle Language">
                         🌐 <span id="lang-label">EN</span>
                     </button>
-                    <button id="streak-pill-btn" class="streak-pill-btn" title="Daily Outdoor Streak" aria-label="Daily Outdoor Streak">
-                        🔥 <span id="streak-count">1</span>d
-                    </button>
                     <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">
                         <span id="sound-icon">🔊</span>
                     </button>
                     <button id="share-card-btn" class="icon-btn" title="Share Progress" aria-label="Share Progress">
                         <span>📤</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="header-stats-bar">
+                <span class="badge-location">📍 SRI LANKA 🇱🇰</span>
+                <div class="header-pills-group">
+                    <button id="streak-pill-btn" class="streak-pill-btn" title="Daily Outdoor Streak" aria-label="Daily Outdoor Streak">
+                        🔥 <span id="streak-count">1</span>d
                     </button>
                     <button id="bingo-pill-btn" class="bingo-pill-btn" aria-live="polite">
                         🏆 <span id="bingo-lines-count">0 Bingos</span>
@@ -81,11 +86,13 @@
 
             <!-- Progress Row -->
             <div class="progress-row">
-                <span class="progress-leaf-icon" aria-hidden="true">🌿</span>
-                <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="9" id="progress-bar-fill" style="--progress: 0%">
-                    <div class="progress-bar-fill" style="width: 0%;"></div>
+                <div class="progress-bar-container">
+                    <span class="progress-leaf-icon" aria-hidden="true">🌿</span>
+                    <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="9" id="progress-bar-fill" style="--progress: 0%">
+                        <div class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">0 of 9 items found (0%)</span>
                 </div>
-                <span class="progress-text" id="progress-text">0 of 9 items found (0%)</span>
                 <span class="camera-tip">
                     <span>📷</span>
                     <span>Tap any tile to scan with camera</span>
