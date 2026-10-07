@@ -3,7 +3,8 @@ import random
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
 
 from fastapi import FastAPI, UploadFile, File, Form, status
 from fastapi.staticfiles import StaticFiles
@@ -100,6 +101,76 @@ async def get_card():
     ]
 
     return {"date": seed_str, "items": ui_items}
+
+
+class SwapRequest(BaseModel):
+    replace_id: str
+    current_ids: List[str] = Field(default_factory=list)
+    target_id: Optional[str] = None
+
+
+@app.get("/api/card/available", tags=["Game"])
+async def get_available_items(current_ids: str = ""):
+    """
+    Returns items from the master nature list that are not currently on the card,
+    allowing users to choose an alternative item when they cannot find one outdoors.
+    """
+    excluded = set(filter(None, [x.strip() for x in current_ids.split(",")]))
+    available = [
+        {"id": item["id"], "name_en": item["name_en"], "name_si": item["name_si"]}
+        for item in ALL_ITEMS
+        if str(item["id"]) not in excluded
+    ]
+    return {"items": available}
+
+
+@app.post("/api/card/swap", tags=["Game"])
+async def swap_card_item(req: SwapRequest):
+    """
+    Swap a card item that the user cannot find with another item from the pool.
+    If target_id is specified, swaps with that specific item.
+    Otherwise picks a random replacement not currently on the board.
+    """
+    item_to_replace = next((i for i in ALL_ITEMS if str(i["id"]) == str(req.replace_id)), None)
+    if not item_to_replace:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": f"Item ID '{req.replace_id}' not found."},
+        )
+
+    excluded_ids = set(str(cid) for cid in req.current_ids)
+    excluded_ids.add(str(req.replace_id))
+
+    if req.target_id:
+        target_item = next((i for i in ALL_ITEMS if str(i["id"]) == str(req.target_id)), None)
+        if not target_item:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"error": f"Target item ID '{req.target_id}' not found."},
+            )
+        new_item = target_item
+    else:
+        # Pick from items not currently on the card
+        available = [i for i in ALL_ITEMS if str(i["id"]) not in excluded_ids]
+        if not available:
+            # Fallback if board somehow exhausted
+            available = [i for i in ALL_ITEMS if str(i["id"]) != str(req.replace_id)]
+
+        if not available:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"error": "No replacement items available."},
+            )
+        new_item = random.choice(available)
+
+    return {
+        "success": True,
+        "replacement": {
+            "id": new_item["id"],
+            "name_en": new_item["name_en"],
+            "name_si": new_item["name_si"],
+        },
+    }
 
 
 @app.post("/api/verify", tags=["Inference"])

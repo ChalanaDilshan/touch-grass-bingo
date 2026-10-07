@@ -108,3 +108,54 @@ def test_verify_synthetic_image(client):
     assert "details" in data
     assert isinstance(data["match"], bool)
     assert isinstance(data["confidence"], float)
+
+
+def test_get_available_items(client):
+    response = client.get("/api/card/available?current_ids=1,2,3")
+    assert response.status_code == 200
+    data = response.json()
+    assert "items" in data
+    items = data["items"]
+    assert len(items) == 22
+    for item in items:
+        assert item["id"] not in ["1", "2", "3"]
+        assert "prompt" not in item
+        assert "distractors" not in item
+
+
+def test_swap_random_item(client):
+    response = client.post(
+        "/api/card/swap",
+        json={"replace_id": "1", "current_ids": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    replacement = data["replacement"]
+    assert "id" in replacement
+    assert replacement["id"] not in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    assert "name_en" in replacement
+    assert "name_si" in replacement
+
+
+def test_swap_specific_target_item(client):
+    response = client.post(
+        "/api/card/swap",
+        json={"replace_id": "1", "current_ids": ["1", "2"], "target_id": "15"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["replacement"]["id"] == "15"
+    assert data["replacement"]["name_en"] == "A Mushroom"
+
+
+def test_swap_invalid_replace_id(client):
+    response = client.post(
+        "/api/card/swap",
+        json={"replace_id": "9999", "current_ids": ["1"]},
+    )
+    assert response.status_code == 404
+    data = response.json()
+    assert "not found" in data["error"].lower()
+

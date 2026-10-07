@@ -10,6 +10,9 @@ let currentTileElement = null;
 let tempThumbnailDataUrl = null;
 let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
 let completedLinesCount = 0;
+let activeSwapItem = null;
+let activeSwapIndex = null;
+let availableSwapItems = [];
 
 // Winning lines on a 3x3 grid (indices 0 to 8)
 const WINNING_LINES = [
@@ -84,7 +87,24 @@ function soundFail() {
     playTone(220, 'sawtooth', 0.3, 0.15);
 }
 
+function soundSwap() {
+    playTone(587.33, 'triangle', 0.12, 0);
+    playTone(880, 'triangle', 0.2, 0.08);
+}
+
 // Storage helpers
+function getSavedCardItems(date) {
+    try {
+        const raw = localStorage.getItem(`bingoCardItems_${date}`);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+function saveCardItems(date, items) {
+    localStorage.setItem(`bingoCardItems_${date}`, JSON.stringify(items));
+}
 function getSavedCompleted() {
     try {
         return JSON.parse(localStorage.getItem('completedItems') || '[]');
@@ -241,6 +261,34 @@ function setupEventListeners() {
         }
     });
 
+    // Feedback modal "Can't find? Swap" button
+    const cantFindModalBtn = document.getElementById('modal-cannot-find-btn');
+    if (cantFindModalBtn) {
+        cantFindModalBtn.addEventListener('click', () => {
+            closeFeedbackModal();
+            if (currentItemId && currentCardData && currentCardData.items) {
+                const idx = currentCardData.items.findIndex(i => String(i.id) === String(currentItemId));
+                if (idx !== -1) {
+                    const item = currentCardData.items[idx];
+                    openSwapModal(item, idx);
+                }
+            }
+        });
+    }
+
+    // Swap modal controls
+    const closeSwapBtn = document.getElementById('close-swap-modal-btn');
+    if (closeSwapBtn) closeSwapBtn.addEventListener('click', closeSwapModal);
+
+    const cancelSwapBtn = document.getElementById('cancel-swap-btn');
+    if (cancelSwapBtn) cancelSwapBtn.addEventListener('click', closeSwapModal);
+
+    const randomSwapBtn = document.getElementById('swap-random-btn');
+    if (randomSwapBtn) randomSwapBtn.addEventListener('click', handleRandomSwap);
+
+    const searchInput = document.getElementById('swap-search-input');
+    if (searchInput) searchInput.addEventListener('input', handleSwapSearch);
+
     // Full Win modal buttons
     document.getElementById('win-close-btn').addEventListener('click', () => {
         document.getElementById('win-modal').classList.add('hidden');
@@ -276,7 +324,6 @@ async function loadDailyCard() {
         const response = await fetch('/api/card');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        currentCardData = data;
 
         // Synchronize date and reset progress if new calendar day
         const savedDate = localStorage.getItem('bingoDate');
@@ -284,11 +331,21 @@ async function loadDailyCard() {
             localStorage.setItem('bingoDate', data.date);
             localStorage.setItem('completedItems', JSON.stringify([]));
             localStorage.setItem('cardPhotos', JSON.stringify({}));
+            saveCardItems(data.date, data.items);
+            currentCardData = data;
+        } else {
+            const savedItems = getSavedCardItems(data.date);
+            if (savedItems && Array.isArray(savedItems) && savedItems.length === 9) {
+                currentCardData = { date: data.date, items: savedItems };
+            } else {
+                saveCardItems(data.date, data.items);
+                currentCardData = data;
+            }
         }
 
         // Format date display
-        renderHeaderMeta(data.date);
-        renderGrid(data.items);
+        renderHeaderMeta(currentCardData.date);
+        renderGrid(currentCardData.items);
 
         loadingState.classList.add('hidden');
         gridContainer.classList.remove('hidden');
@@ -346,12 +403,20 @@ function renderGrid(items) {
 
         const badgeHtml = isDone ? `<div class="completed-badge-icon" title="Verified">✓</div>` : '';
 
+        const swapBtnHtml = !isDone ? `
+            <button class="tile-swap-btn" type="button" data-index="${index}" title="Can't find? Swap for another item" aria-label="Can't find ${escapeHtml(primaryName)}? Swap item">
+                <span class="swap-icon">🔄</span>
+                <span class="swap-label-full">Can't find?</span>
+                <span class="swap-label-short">Swap</span>
+            </button>
+        ` : `<span class="tile-leaf-icon">🌿</span>`;
+
         tile.innerHTML = `
             ${thumbHtml}
             ${badgeHtml}
             <div class="tile-top">
                 <span class="tile-num-tag">#${index + 1}</span>
-                <span class="tile-leaf-icon">${isDone ? '🌿' : '🍃'}</span>
+                ${swapBtnHtml}
             </div>
             <div class="tile-body">
                 <div class="${primaryClass}">${escapeHtml(primaryName)}</div>
@@ -366,6 +431,16 @@ function renderGrid(items) {
                 <span class="scan-btn-arrow">›</span>
             </button>
         `;
+
+        // Swap button click handler
+        const swapBtn = tile.querySelector('.tile-swap-btn');
+        if (swapBtn) {
+            swapBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                soundTap();
+                openSwapModal(item, index);
+            });
+        }
 
         tile.addEventListener('click', () => {
             soundTap();
@@ -684,16 +759,20 @@ function showFeedbackModal({ success, title, desc, confidence, tip }) {
     document.getElementById('feedback-title').textContent = title;
     document.getElementById('feedback-desc').textContent = desc;
 
+    const cantFindBtn = document.getElementById('modal-cannot-find-btn');
+
     if (success) {
         badge.textContent = "VERIFIED MATCH";
         badge.className = "result-badge badge-success";
         icon.textContent = "🌿";
         retryBtn.classList.add('hidden');
+        if (cantFindBtn) cantFindBtn.classList.add('hidden');
     } else {
         badge.textContent = "AI FEEDBACK";
         badge.className = "result-badge badge-error";
         icon.textContent = "🔍";
         retryBtn.classList.remove('hidden');
+        if (cantFindBtn) cantFindBtn.classList.remove('hidden');
     }
 
     // Confidence breakdown
@@ -709,6 +788,233 @@ function showFeedbackModal({ success, title, desc, confidence, tip }) {
 
 function closeFeedbackModal() {
     document.getElementById('feedback-modal').classList.add('hidden');
+}
+
+// Cannot Find / Swap Modal Controllers
+async function openSwapModal(item, index) {
+    if (!item) return;
+    activeSwapItem = item;
+    activeSwapIndex = index;
+
+    const modal = document.getElementById('swap-modal');
+    const targetNameEl = document.getElementById('swap-target-name');
+    const titleEl = document.getElementById('swap-modal-title');
+    const searchInput = document.getElementById('swap-search-input');
+    const listEl = document.getElementById('swap-items-list');
+    const loadingEl = document.getElementById('swap-list-loading');
+
+    const primaryName = currentLangMode === 'si' ? item.name_si : item.name_en;
+    const subName = currentLangMode === 'si' ? item.name_en : item.name_si;
+    if (targetNameEl) {
+        targetNameEl.textContent = `${primaryName}${subName ? ` (${subName})` : ''}`;
+    }
+
+    if (titleEl) {
+        titleEl.textContent = currentLangMode === 'si'
+            ? `"${primaryName}" හොයාගන්න අමාරුද?`
+            : `Can't Find "${primaryName}"?`;
+    }
+
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    modal.classList.remove('hidden');
+
+    // Fetch available items not currently on card
+    if (listEl) listEl.innerHTML = '';
+    if (loadingEl) loadingEl.classList.remove('hidden');
+
+    const currentIds = (currentCardData?.items || []).map(i => String(i.id)).join(',');
+
+    try {
+        const response = await fetch(`/api/card/available?current_ids=${encodeURIComponent(currentIds)}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        availableSwapItems = data.items || [];
+        renderAvailableItemsList(availableSwapItems);
+    } catch (err) {
+        console.error("Failed to fetch available items", err);
+        if (listEl) {
+            listEl.innerHTML = `<div class="swap-no-results">Could not load nature items list. You can still use the Random Replacement button above!</div>`;
+        }
+    } finally {
+        if (loadingEl) loadingEl.classList.add('hidden');
+    }
+}
+
+function closeSwapModal() {
+    const modal = document.getElementById('swap-modal');
+    if (modal) modal.classList.add('hidden');
+    activeSwapItem = null;
+    activeSwapIndex = null;
+}
+
+function renderAvailableItemsList(items) {
+    const listEl = document.getElementById('swap-items-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (!items || items.length === 0) {
+        listEl.innerHTML = `<div class="swap-no-results">No matching nature items found in list.</div>`;
+        return;
+    }
+
+    items.forEach(targetItem => {
+        const card = document.createElement('div');
+        card.className = 'swap-item-card';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+
+        const primaryName = (currentLangMode === 'si') ? targetItem.name_si : targetItem.name_en;
+        const subName = (currentLangMode === 'si') ? targetItem.name_en : targetItem.name_si;
+
+        card.innerHTML = `
+            <div class="swap-item-info">
+                <div class="swap-item-primary">🍃 ${escapeHtml(primaryName)}</div>
+                ${subName && currentLangMode !== 'en-only' ? `<div class="swap-item-sub">${escapeHtml(subName)}</div>` : ''}
+            </div>
+            <div class="swap-item-action-badge">
+                <span>Select</span>
+                <span>→</span>
+            </div>
+        `;
+
+        const doSelect = () => {
+            soundTap();
+            handleTargetSwap(targetItem);
+        };
+
+        card.addEventListener('click', doSelect);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                doSelect();
+            }
+        });
+
+        listEl.appendChild(card);
+    });
+}
+
+function handleSwapSearch(e) {
+    const query = (e.target.value || '').trim().toLowerCase();
+    if (!query) {
+        renderAvailableItemsList(availableSwapItems);
+        return;
+    }
+
+    const filtered = availableSwapItems.filter(item => {
+        const en = (item.name_en || '').toLowerCase();
+        const si = (item.name_si || '').toLowerCase();
+        return en.includes(query) || si.includes(query);
+    });
+
+    renderAvailableItemsList(filtered);
+}
+
+async function handleRandomSwap() {
+    if (!activeSwapItem || activeSwapIndex === null) return;
+    soundTap();
+
+    const currentIds = (currentCardData?.items || []).map(i => String(i.id));
+    const randomBtn = document.getElementById('swap-random-btn');
+    if (randomBtn) {
+        randomBtn.disabled = true;
+        randomBtn.textContent = "Selecting… ⏳";
+    }
+
+    try {
+        const response = await fetch('/api/card/swap', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                replace_id: String(activeSwapItem.id),
+                current_ids: currentIds
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || `Server responded with ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.replacement) {
+            applyItemSwap(data.replacement);
+        }
+    } catch (err) {
+        console.error("Failed to swap item randomly", err);
+        showToast(`Could not swap item: ${err.message}`);
+    } finally {
+        if (randomBtn) {
+            randomBtn.disabled = false;
+            randomBtn.innerHTML = `<span class="btn-icon">🎲</span><span>Get Random Replacement</span>`;
+        }
+    }
+}
+
+async function handleTargetSwap(targetItem) {
+    if (!activeSwapItem || activeSwapIndex === null || !targetItem) return;
+
+    const currentIds = (currentCardData?.items || []).map(i => String(i.id));
+
+    try {
+        const response = await fetch('/api/card/swap', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                replace_id: String(activeSwapItem.id),
+                current_ids: currentIds,
+                target_id: String(targetItem.id)
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || `Server responded with ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.replacement) {
+            applyItemSwap(data.replacement);
+        }
+    } catch (err) {
+        console.error("Failed to swap with selected item", err);
+        showToast(`Could not swap item: ${err.message}`);
+    }
+}
+
+function applyItemSwap(newItem) {
+    if (!currentCardData || !currentCardData.items || activeSwapIndex === null) return;
+
+    const oldItem = currentCardData.items[activeSwapIndex];
+    currentCardData.items[activeSwapIndex] = newItem;
+
+    // Save customized card items
+    saveCardItems(currentCardData.date, currentCardData.items);
+
+    // Re-render grid
+    renderGrid(currentCardData.items);
+
+    // Audio & celebratory visual feedback
+    soundSwap();
+
+    const newTile = document.getElementById(`tile-${newItem.id}`);
+    if (newTile) {
+        newTile.classList.add('tile-swapped');
+        setTimeout(() => {
+            newTile.classList.remove('tile-swapped');
+        }, 800);
+    }
+
+    const oldName = currentLangMode === 'si' ? oldItem.name_si : oldItem.name_en;
+    const newName = currentLangMode === 'si' ? newItem.name_si : newItem.name_en;
+    showToast(`🔄 Replaced "${oldName}" with "${newName}"!`);
+
+    closeSwapModal();
+    updateProgressUI();
+    checkBingoLines(false);
 }
 
 // Share Modal & Formatter

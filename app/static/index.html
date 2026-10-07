@@ -171,6 +171,7 @@
 
                 <div class="modal-actions">
                     <button id="modal-retry-camera-btn" class="btn btn-primary hidden">📷 Try Again</button>
+                    <button id="modal-cannot-find-btn" class="btn btn-swap-alt hidden">🔄 Can't find? Swap</button>
                     <button id="modal-ok-btn" class="btn btn-secondary">Continue</button>
                 </div>
             </div>
@@ -218,6 +219,56 @@
                 <div class="modal-actions">
                     <button id="win-share-btn" class="btn btn-gold">🌟 Share Achievement</button>
                     <button id="win-close-btn" class="btn btn-secondary">Admire Board</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── CANNOT FIND / SWAP MODAL ─── -->
+    <div id="swap-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="swap-modal-title">
+        <div class="modal-card modal-swap">
+            <div class="modal-header">
+                <span class="result-badge badge-swap">🔄 CANNOT FIND ITEM</span>
+                <button id="close-swap-modal-btn" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="result-big-icon swap-icon-anim">🔍</div>
+                <h3 id="swap-modal-title">Can't Find This Item?</h3>
+                <p id="swap-modal-desc" class="result-description">
+                    Can't spot <strong id="swap-target-name">Item</strong> outdoors? Replace it with another nature item from the list!
+                </p>
+
+                <!-- Fast 1-click Random Swap -->
+                <div class="swap-quick-action">
+                    <button id="swap-random-btn" class="btn btn-primary btn-random-swap">
+                        <span class="btn-icon">🎲</span>
+                        <span>Get Random Replacement</span>
+                    </button>
+                    <span class="swap-quick-hint">Draws a surprise item from the outdoor nature pool</span>
+                </div>
+
+                <!-- Divider -->
+                <div class="swap-divider">
+                    <span>OR CHOOSE FROM LIST</span>
+                </div>
+
+                <!-- Search Box -->
+                <div class="swap-search-wrap">
+                    <span class="search-icon">🔎</span>
+                    <input type="text" id="swap-search-input" class="swap-search-input" placeholder="Search available items..." autocomplete="off">
+                </div>
+
+                <!-- Available Items List -->
+                <div class="swap-list-container">
+                    <div id="swap-items-list" class="swap-items-grid" role="list"></div>
+                    <div id="swap-list-loading" class="swap-loading hidden">
+                        <div class="spinner spinner-sm"></div>
+                        <span>Loading nature items…</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 6px;">
+                    <button id="cancel-swap-btn" class="btn btn-secondary">Keep Current Item</button>
                 </div>
             </div>
         </div>
