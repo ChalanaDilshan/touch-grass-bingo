@@ -181,12 +181,173 @@ function applyLanguageMode(mode) {
     if (currentCardData && currentCardData.items) {
         renderGrid(currentCardData.items);
     }
+    updateHomeViewUI();
 }
 
 function saveCompleted(items, photos) {
     localStorage.setItem('completedItems', JSON.stringify(items));
     if (photos) {
         localStorage.setItem('cardPhotos', JSON.stringify(photos));
+    }
+}
+
+// ─── VIEW ROUTING CONTROLLER (HOME VS GAME) ───
+let currentView = 'home';
+
+function switchView(viewName, updateHistory = true) {
+    currentView = (viewName === 'game') ? 'game' : 'home';
+
+    const homeView = document.getElementById('home-view');
+    const gameView = document.getElementById('game-view');
+    const navHomeBtn = document.getElementById('nav-home-btn');
+    const navPlayBtn = document.getElementById('nav-play-btn');
+
+    if (currentView === 'game') {
+        if (homeView) homeView.classList.add('hidden');
+        if (gameView) gameView.classList.remove('hidden');
+        if (navHomeBtn) navHomeBtn.classList.remove('active');
+        if (navPlayBtn) navPlayBtn.classList.add('active');
+        if (updateHistory && window.location.hash !== '#play') {
+            window.location.hash = 'play';
+        }
+    } else {
+        if (homeView) homeView.classList.remove('hidden');
+        if (gameView) gameView.classList.add('hidden');
+        if (navHomeBtn) navHomeBtn.classList.add('active');
+        if (navPlayBtn) navPlayBtn.classList.remove('active');
+        if (updateHistory && window.location.hash !== '#home' && window.location.hash !== '') {
+            window.location.hash = 'home';
+        }
+        updateHomeViewUI();
+    }
+
+    // Ensure user starts at top of the switched view
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setupRouting() {
+    const hash = (window.location.hash || '').toLowerCase();
+    if (hash === '#play' || hash === '#game') {
+        switchView('game', false);
+    } else {
+        switchView('home', false);
+    }
+
+    window.addEventListener('hashchange', () => {
+        const h = (window.location.hash || '').toLowerCase();
+        if (h === '#play' || h === '#game') {
+            switchView('game', false);
+        } else {
+            switchView('home', false);
+        }
+    });
+}
+
+function updateHomeViewUI() {
+    // 1. Streak & Bingos
+    const streak = getSavedStreak();
+    const streakEl = document.getElementById('home-streak-count');
+    if (streakEl) streakEl.textContent = streak;
+
+    const bingosEl = document.getElementById('home-bingos-count');
+    if (bingosEl) {
+        bingosEl.textContent = `${completedLinesCount} ${completedLinesCount === 1 ? 'Bingo' : 'Bingos'}`;
+    }
+
+    // 2. Date display
+    const dateEl = document.getElementById('home-date-display');
+    if (dateEl && currentCardData && currentCardData.date) {
+        let formatted = currentCardData.date;
+        if (formatted.length === 8) {
+            const y = formatted.slice(0, 4);
+            const m = formatted.slice(4, 6);
+            const d = formatted.slice(6, 8);
+            const dateObj = new Date(`${y}-${m}-${d}`);
+            formatted = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        dateEl.textContent = `📅 ${formatted}`;
+    }
+
+    // 3. Completed items & progress
+    const completed = getSavedCompleted();
+    const count = completed.length;
+    const percent = Math.round((count / 9) * 100);
+
+    const progressFill = document.getElementById('home-progress-fill');
+    if (progressFill) progressFill.style.width = `${percent}%`;
+
+    const progressCounter = document.getElementById('home-progress-counter');
+    if (progressCounter) {
+        progressCounter.textContent = `${count} of 9 items found (${percent}%)`;
+    }
+
+    // 4. Hero Visual Floating Live Tip
+    const heroTipEl = document.getElementById('hero-floating-tip-text');
+    if (heroTipEl) {
+        if (count === 9) {
+            heroTipEl.textContent = "All 9 items verified! You're today's Garden Master 🏆";
+        } else if (count > 0) {
+            heroTipEl.textContent = `${count} of 9 items found — ${9 - count} discoveries left outside!`;
+        } else {
+            heroTipEl.textContent = "9 nature discoveries waiting outside right now";
+        }
+    }
+
+    // 5. Status Title & Subtitle & CTA Button
+    const titleEl = document.getElementById('home-status-title');
+    const subtitleEl = document.getElementById('home-status-subtitle');
+    const btnTextEl = document.getElementById('home-play-btn-text');
+    const navBadgeEl = document.getElementById('nav-badge-progress');
+
+    if (navBadgeEl) {
+        if (count > 0) {
+            navBadgeEl.textContent = `${count}/9`;
+            navBadgeEl.classList.remove('hidden');
+        } else {
+            navBadgeEl.classList.add('hidden');
+        }
+    }
+
+    if (count === 9) {
+        if (titleEl) titleEl.textContent = "🏆 Garden Master Achieved!";
+        if (subtitleEl) subtitleEl.textContent = "Incredible job! You found all 9 items and completed today's nature card.";
+        if (btnTextEl) btnTextEl.textContent = "View Completed Board";
+    } else if (count > 0) {
+        if (titleEl) titleEl.textContent = `Active Walk: ${count} of 9 Items Found!`;
+        if (subtitleEl) subtitleEl.textContent = `You're on your way to a Bingo! ${9 - count} nature items left to spot today.`;
+        if (btnTextEl) btnTextEl.textContent = "Resume Bingo Walk";
+    } else {
+        if (titleEl) titleEl.textContent = "Today's Nature Board is Ready!";
+        if (subtitleEl) subtitleEl.textContent = "9 exciting nature items are waiting to be spotted in your garden or neighborhood.";
+        if (btnTextEl) btnTextEl.textContent = "Start Today's Bingo Walk";
+    }
+
+    // 6. Render sneak peek chips of today's items
+    const chipsContainer = document.getElementById('home-items-preview');
+    if (chipsContainer && currentCardData && currentCardData.items) {
+        chipsContainer.innerHTML = '';
+        currentCardData.items.forEach(item => {
+            const isDone = completed.includes(String(item.id));
+            const chip = document.createElement('span');
+            chip.className = `preview-chip ${isDone ? 'done' : ''}`;
+            const name = (currentLangMode === 'si') ? item.name_si : item.name_en;
+            chip.innerHTML = `${isDone ? '✓' : '🍃'} ${escapeHtml(name)}`;
+            chip.title = isDone ? 'Verified! Tap to view on board' : 'Tap to focus on board';
+            chip.style.cursor = 'pointer';
+            chip.addEventListener('click', () => {
+                soundTap();
+                switchView('game');
+                setTimeout(() => {
+                    const targetTile = document.getElementById(`tile-${item.id}`);
+                    if (targetTile) {
+                        targetTile.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetTile.classList.add('tile-pulse-highlight');
+                        setTimeout(() => targetTile.classList.remove('tile-pulse-highlight'), 1600);
+                    }
+                }, 120);
+            });
+            chipsContainer.appendChild(chip);
+        });
     }
 }
 
@@ -198,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
     updateSoundButtonUI();
     updateStreakUI();
+    setupRouting();
     applyLanguageMode(currentLangMode);
     setupEventListeners();
     loadDailyCard();
@@ -303,6 +465,92 @@ function setupEventListeners() {
 
     // Camera input change event
     document.getElementById('camera-input').addEventListener('change', handleCameraFile);
+
+    // Navigation & Home View Event Listeners
+    const navHomeBtn = document.getElementById('nav-home-btn');
+    if (navHomeBtn) {
+        navHomeBtn.addEventListener('click', () => {
+            soundTap();
+            switchView('home');
+        });
+    }
+
+    const navPlayBtn = document.getElementById('nav-play-btn');
+    if (navPlayBtn) {
+        navPlayBtn.addEventListener('click', () => {
+            soundTap();
+            switchView('game');
+        });
+    }
+
+    const brandHomeLink = document.getElementById('brand-home-link');
+    if (brandHomeLink) {
+        brandHomeLink.addEventListener('click', () => {
+            soundTap();
+            switchView('home');
+        });
+        brandHomeLink.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                soundTap();
+                switchView('home');
+            }
+        });
+    }
+
+    const homePlayBtn = document.getElementById('home-play-btn');
+    if (homePlayBtn) {
+        homePlayBtn.addEventListener('click', () => {
+            soundTap();
+            switchView('game');
+        });
+    }
+
+    const homeBottomPlayBtn = document.getElementById('home-bottom-play-btn');
+    if (homeBottomPlayBtn) {
+        homeBottomPlayBtn.addEventListener('click', () => {
+            soundTap();
+            switchView('game');
+        });
+    }
+
+    const footerHomeBtn = document.getElementById('footer-home-btn');
+    if (footerHomeBtn) {
+        footerHomeBtn.addEventListener('click', () => {
+            soundTap();
+            switchView('home');
+        });
+    }
+
+    const footerPlayBtn = document.getElementById('footer-play-btn');
+    if (footerPlayBtn) {
+        footerPlayBtn.addEventListener('click', () => {
+            soundTap();
+            switchView('game');
+        });
+    }
+
+    // Home screen interactive stat buttons
+    const homeStreakBtn = document.getElementById('home-streak-btn');
+    if (homeStreakBtn) {
+        homeStreakBtn.addEventListener('click', () => {
+            soundTap();
+            const streak = getSavedStreak();
+            showToast(`🔥 ${streak}-day outdoor streak! Step outside daily to keep your streak glowing!`);
+        });
+    }
+
+    const homeBingosBtn = document.getElementById('home-bingos-btn');
+    if (homeBingosBtn) {
+        homeBingosBtn.addEventListener('click', () => {
+            soundTap();
+            if (completedLinesCount > 0) {
+                showToast(`🏆 ${completedLinesCount} ${completedLinesCount === 1 ? 'Bingo' : 'Bingos'} completed today! Great job!`);
+            } else {
+                showToast("🎯 No Bingos yet today! Connect 3 nature finds in a row on the card to win!");
+            }
+        });
+    }
 }
 
 function updateSoundButtonUI() {
@@ -350,6 +598,7 @@ async function loadDailyCard() {
         loadingState.classList.add('hidden');
         gridContainer.classList.remove('hidden');
         checkBingoLines(false); // initial count without triggering fanfare
+        updateHomeViewUI();
     } catch (err) {
         console.error("Failed to load daily card", err);
         loadingState.classList.add('hidden');
@@ -465,7 +714,10 @@ function updateProgressUI() {
     // The fill div is nested inside the progress-bar-track element
     const fillEl = document.querySelector('.progress-bar-fill');
     if (fillEl) fillEl.style.width = `${percent}%`;
-    document.getElementById('progress-text').textContent = `${count} of 9 items found (${percent}%)`;
+    const progressText = document.getElementById('progress-text');
+    if (progressText) progressText.textContent = `${count} of 9 items found (${percent}%)`;
+
+    updateHomeViewUI();
 }
 
 // Camera Trigger

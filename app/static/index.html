@@ -51,13 +51,26 @@
         <!-- ─── HEADER ─── -->
         <header class="app-header">
             <div class="header-top">
-                <div class="brand">
+                <div class="brand" id="brand-home-link" role="button" tabindex="0" title="Touch Grass Bingo - Go to Home">
                     <div class="brand-logo" aria-hidden="true">🍃</div>
                     <div class="brand-text-group">
                         <span class="brand-name">TouchGrass</span>
                         <span class="brand-date" id="date-display">Today</span>
                     </div>
                 </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="nav-segment" aria-label="Main Navigation">
+                    <button id="nav-home-btn" class="nav-segment-btn active" type="button" aria-label="Home Page">
+                        <span class="nav-btn-icon">🏡</span>
+                        <span class="nav-btn-label">Home</span>
+                    </button>
+                    <button id="nav-play-btn" class="nav-segment-btn" type="button" aria-label="Play Bingo">
+                        <span class="nav-btn-icon">🎯</span>
+                        <span class="nav-btn-label">Play Bingo</span>
+                        <span id="nav-badge-progress" class="nav-badge-mini hidden">0/9</span>
+                    </button>
+                </nav>
 
                 <div class="header-actions">
                     <button id="lang-toggle-btn" class="lang-pill-btn" title="Toggle Language: English / Sinhala" aria-label="Toggle Language">
@@ -71,73 +84,283 @@
                     </button>
                 </div>
             </div>
-
-            <div class="header-stats-bar">
-                <span class="badge-location">📍 SRI LANKA 🇱🇰</span>
-                <div class="header-pills-group">
-                    <button id="streak-pill-btn" class="streak-pill-btn" title="Daily Outdoor Streak" aria-label="Daily Outdoor Streak">
-                        🔥 <span id="streak-count">1</span>d
-                    </button>
-                    <button id="bingo-pill-btn" class="bingo-pill-btn" aria-live="polite">
-                        🏆 <span id="bingo-lines-count">0 Bingos</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Progress Row -->
-            <div class="progress-row">
-                <div class="progress-bar-container">
-                    <span class="progress-leaf-icon" aria-hidden="true">🌿</span>
-                    <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="9" id="progress-bar-fill" style="--progress: 0%">
-                        <div class="progress-bar-fill" style="width: 0%;"></div>
-                    </div>
-                    <span class="progress-text" id="progress-text">0 of 9 items found (0%)</span>
-                </div>
-                <span class="camera-tip">
-                    <span>📷</span>
-                    <span>Tap any tile to scan with camera</span>
-                </span>
-            </div>
         </header>
 
         <!-- ─── MAIN CONTENT ─── -->
         <main class="main-content">
 
-            <!-- Loading State -->
-            <div id="loading-state" class="state-card">
-                <div class="spinner"></div>
-                <h3>Generating Daily Nature Card…</h3>
-                <p>Loading localized flora &amp; fauna for your nature walk</p>
-            </div>
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- ─── HOME / LANDING VIEW ─── -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <section id="home-view" class="view-panel" aria-label="Touch Grass Bingo Home">
+                
+                <!-- Hero Section -->
+                <div class="home-hero">
+                    <div class="home-hero-tags">
+                        <span class="hero-tag">✨ Daily Nature Quest</span>
+                        <span class="hero-tag">🌿 Sri Lankan Flora &amp; Fauna</span>
+                        <span class="hero-tag">🤖 Zero-Shot Vision AI</span>
+                    </div>
 
-            <!-- Error State -->
-            <div id="error-state" class="state-card hidden">
-                <div class="error-icon">⚠️</div>
-                <h3 id="error-title">Could not load today's card</h3>
-                <p id="error-message">Please check your internet connection and retry.</p>
-                <button id="retry-btn" class="btn btn-primary" style="max-width:160px; margin-top:4px;">Try Again</button>
-            </div>
+                    <h1 class="home-hero-title">
+                        Step Outside. <br>
+                        <span class="gradient-text">Touch Grass.</span>
+                    </h1>
+                    
+                    <p class="home-hero-desc">
+                        Leave your screens behind! Every day at midnight, a fresh 3×3 nature bingo board is generated for you. 
+                        Head outdoors, photograph local flora and fauna, and let on-device AI vision verify your nature discoveries in real time.
+                    </p>
 
-            <!-- Bingo Grid -->
-            <div id="grid-container" class="grid-container hidden">
-                <div id="bingo-grid" class="bingo-grid" role="grid" aria-label="Touch Grass Nature Bingo 3×3 Card"></div>
-            </div>
+                    <!-- Scenic Nature Hero Visual Card -->
+                    <div class="home-hero-visual-card">
+                        <div class="hero-image-container">
+                            <img src="/static/nature_hero.jpg" alt="Lush scenic meadow and lake for nature walk" class="hero-nature-image" fetchpriority="high">
+                            <div class="hero-image-overlay"></div>
+                            <div class="hero-live-pill">
+                                <span class="pulse-green-dot" aria-hidden="true"></span>
+                                <span>TODAY'S BOARD IS LIVE</span>
+                            </div>
+                            <div class="hero-floating-tip">
+                                <span class="floating-tip-icon">🍃</span>
+                                <span class="floating-tip-text" id="hero-floating-tip-text">9 nature discoveries waiting outside right now</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Bingo Win Banner -->
-            <aside id="bingo-banner" class="bingo-banner hidden" aria-live="polite">
-                <div class="banner-content">
-                    <span class="banner-emoji">🎉</span>
-                    <div class="banner-text">
-                        <h4 id="banner-title">BINGO! Line Complete!</h4>
-                        <p id="banner-sub">Keep exploring to complete the full card!</p>
+                    <!-- Today's Challenge Action Card -->
+                    <div class="home-daily-card">
+                        <div class="daily-card-header">
+                            <div class="daily-card-meta">
+                                <span class="daily-card-date" id="home-date-display">📅 Today's Challenge</span>
+                                <span class="daily-card-badge">📍 Sri Lanka</span>
+                            </div>
+                            <div class="daily-card-stats">
+                                <button id="home-streak-btn" class="badge-streak interactive-stat-btn" type="button" title="Outdoor Streak">
+                                    🔥 <span id="home-streak-count">1</span>d Streak
+                                </button>
+                                <button id="home-bingos-btn" class="badge-bingos interactive-stat-btn" type="button" title="Bingos Completed Today">
+                                    🏆 <span id="home-bingos-count">0 Bingos</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="daily-card-body">
+                            <div class="daily-status-group">
+                                <h2 class="daily-status-title" id="home-status-title">Today's Nature Board is Ready!</h2>
+                                <p class="daily-status-sub" id="home-status-subtitle">9 exciting nature items are waiting to be spotted in your garden or neighborhood.</p>
+                            </div>
+
+                            <div class="home-progress-container">
+                                <div class="home-progress-track">
+                                    <div id="home-progress-fill" class="home-progress-fill" style="width: 0%;"></div>
+                                </div>
+                                <span id="home-progress-counter" class="home-progress-counter">0 of 9 items found (0%)</span>
+                            </div>
+
+                            <button id="home-play-btn" class="btn btn-primary btn-hero-cta" type="button">
+                                <span class="btn-cta-icon">🌿</span>
+                                <span id="home-play-btn-text">Start Today's Bingo Walk</span>
+                                <span class="btn-cta-arrow">→</span>
+                            </button>
+                        </div>
+
+                        <!-- Sneak Peek Preview of Today's Board -->
+                        <div class="home-preview-section">
+                            <div class="home-preview-label">
+                                <span>🌿 Today's 9 Nature Challenges (tap any to inspect):</span>
+                            </div>
+                            <div id="home-items-preview" class="home-preview-chips">
+                                <span class="preview-chip-loading">Loading today's challenges…</span>
+                            </div>
+                            <div class="home-swap-tip">
+                                <span>🔄 <strong>Can't find an item?</strong> You can mark it as "Can't find?" to swap it with any other item from the nature list!</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </aside>
+
+                <!-- How It Works Section -->
+                <div class="home-section home-how-section">
+                    <div class="section-heading">
+                        <span class="section-tag">🌱 SIMPLE &amp; FUN</span>
+                        <h2>How Touch Grass Bingo Works</h2>
+                        <p>Turn your daily walks into an engaging scavenger hunt in three easy steps.</p>
+                    </div>
+
+                    <div class="steps-grid">
+                        <div class="step-card">
+                            <div class="step-icon-wrap">🚶‍♂️</div>
+                            <div class="step-num">Step 01</div>
+                            <h3>Step Outside</h3>
+                            <p>Head out into your garden, street, balcony, or neighborhood park. A new 3×3 board refreshes every midnight.</p>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-icon-wrap">📷</div>
+                            <div class="step-num">Step 02</div>
+                            <h3>Spot &amp; Photograph</h3>
+                            <p>Spot items on your board like puddles, yellow leaves, birds, or mushrooms. Tap any tile to snap a photo.</p>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-icon-wrap">🤖</div>
+                            <div class="step-num">Step 03</div>
+                            <h3>AI Match &amp; Bingo!</h3>
+                            <p>Our vision AI verifies your photo in memory. Line up 3 items to shout BINGO, or find all 9 to become Garden Master!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features & Technology Section -->
+                <div class="home-section home-features-section">
+                    <div class="section-heading">
+                        <span class="section-tag">⚡ ZERO COMPROMISES</span>
+                        <h2>Built for Mindful Exploration</h2>
+                        <p>Designed with privacy, local biodiversity, and seamless performance at its heart.</p>
+                    </div>
+
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🧠</div>
+                            <h3>Zero-Shot Vision AI</h3>
+                            <p>Powered by open-weight OpenCLIP ViT-B-32 with cosine text embeddings. Runs fast on CPU with zero cloud dependencies.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">🌴</div>
+                            <h3>Sri Lanka Biodiversity</h3>
+                            <p>Tailored nature items including coconut trees, jackfruit leaves, millipedes, and rain puddles in both English and Sinhala (සිංහල).</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">🔄</div>
+                            <h3>Cannot Find? Swap It!</h3>
+                            <p>No banana tree or snail shell in your area? Easily swap any uncompleted tile with another item from the master nature list.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">🔒</div>
+                            <h3>100% In-Memory Privacy</h3>
+                            <p>Photos are compressed right inside your browser canvas, evaluated in RAM, and immediately discarded. Never saved to disk.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">🔥</div>
+                            <h3>Daily Outdoor Streaks</h3>
+                            <p>Keep your daily fire glowing. Build a healthy routine of connecting with fresh air and green surroundings every single day.</p>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">📲</div>
+                            <h3>Offline-Ready PWA</h3>
+                            <p>Install to your home screen like a native app. Works fast and smooth on walks even when mobile coverage is weak.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wellbeing Inspiration Card -->
+                <div class="home-wellbeing-card">
+                    <div class="wellbeing-icon">🍃</div>
+                    <div class="wellbeing-content">
+                        <h3>Why Touch Grass?</h3>
+                        <p>Scientific studies show that just 20 minutes spent in green natural spaces significantly lowers cortisol, restores mental clarity, and lifts mood. Step outside and let the natural world surprise you!</p>
+                        <div class="wellbeing-pills">
+                            <span class="wb-pill">💚 Stress Relief</span>
+                            <span class="wb-pill">☀️ Natural Sunlight</span>
+                            <span class="wb-pill">🚶 Daily Movement</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom CTA -->
+                <div class="home-bottom-cta">
+                    <h2>Ready to explore today's nature walk?</h2>
+                    <p>Your daily board is live right now. Go outside and find your first discovery!</p>
+                    <button id="home-bottom-play-btn" class="btn btn-primary btn-hero-cta" type="button">
+                        <span>🌿 Open Today's Bingo Board</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+            </section>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- ─── GAME / BINGO VIEW ─── -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <section id="game-view" class="view-panel hidden" aria-label="Daily Nature Bingo Card Game">
+
+                <!-- Game Control Card (Header Stats & Progress) -->
+                <div class="game-control-card">
+                    <div class="header-stats-bar">
+                        <span class="badge-location">📍 SRI LANKA</span>
+                        <div class="header-pills-group">
+                            <button id="streak-pill-btn" class="streak-pill-btn" title="Daily Outdoor Streak" aria-label="Daily Outdoor Streak">
+                                🔥 <span id="streak-count">1</span>d
+                            </button>
+                            <button id="bingo-pill-btn" class="bingo-pill-btn" aria-live="polite">
+                                🏆 <span id="bingo-lines-count">0 Bingos</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="progress-row">
+                        <div class="progress-bar-container">
+                            <span class="progress-leaf-icon" aria-hidden="true">🌿</span>
+                            <div class="progress-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="9" id="progress-bar-fill" style="--progress: 0%">
+                                <div class="progress-bar-fill" style="width: 0%;"></div>
+                            </div>
+                            <span class="progress-text" id="progress-text">0 of 9 items found (0%)</span>
+                        </div>
+                        <span class="camera-tip">
+                            <span>📷</span>
+                            <span>Tap any tile to scan with camera</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="state-card">
+                    <div class="spinner"></div>
+                    <h3>Generating Daily Nature Card…</h3>
+                    <p>Loading localized flora &amp; fauna for your nature walk</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="state-card hidden">
+                    <div class="error-icon">⚠️</div>
+                    <h3 id="error-title">Could not load today's card</h3>
+                    <p id="error-message">Please check your internet connection and retry.</p>
+                    <button id="retry-btn" class="btn btn-primary" style="max-width:160px; margin-top:4px;">Try Again</button>
+                </div>
+
+                <!-- Bingo Grid -->
+                <div id="grid-container" class="grid-container hidden">
+                    <div id="bingo-grid" class="bingo-grid" role="grid" aria-label="Touch Grass Nature Bingo 3×3 Card"></div>
+                </div>
+
+                <!-- Bingo Win Banner -->
+                <aside id="bingo-banner" class="bingo-banner hidden" aria-live="polite">
+                    <div class="banner-content">
+                        <span class="banner-emoji">🎉</span>
+                        <div class="banner-text">
+                            <h4 id="banner-title">BINGO! Line Complete!</h4>
+                            <p id="banner-sub">Keep exploring to complete the full card!</p>
+                        </div>
+                    </div>
+                </aside>
+
+            </section>
 
         </main>
 
         <!-- ─── FOOTER ─── -->
         <footer class="app-footer">
+            <div class="footer-nav-links">
+                <button id="footer-home-btn" class="footer-link-btn" type="button">🏡 Home</button>
+                <span class="footer-nav-dot">•</span>
+                <button id="footer-play-btn" class="footer-link-btn" type="button">🎯 Play Bingo</button>
+            </div>
             <div class="privacy-pill">
                 <span>🔒</span>
                 <span>In-memory AI verification — Photos are never saved on the server.</span>
